@@ -88,3 +88,21 @@ ggplot(data_sample_100, aes(x = host_location, fill = room_type)) +
         y = "Room Type"
     )
 ```
+
+### Aufgabe 4
+
+Hier wird eine bivariate Darstellung der durchschnittlichen Antwortzeit der Airbnb-Unterkünfte nach Unterkunftstyp dargestellt.
+```{r, include=TRUE}
+data_sample_1000 <- data[sample(nrow(data), 1000), ]
+
+ggplot(data_sample_1000, aes(
+    x = host_location, y = price_num,
+    color = host_is_superhost,
+    shape = host_identity_verified
+)) +
+    geom_point(size = 3, alpha = .6) +
+    labs(title = "Price by host location") +
+    theme(
+        axis.text.x = element_text(angle = 90)
+    )
+```
