@@ -1,0 +1,90 @@
+---
+title: Aufgabe 3 ExpD
+author: Fabio Kapsahili
+date: 2022-11-21
+output:
+    html_document
+---
+
+## Aufgabe 3
+
+```{r, echo=FALSE, message=FALSE, warning=FALSE}
+library(ggplot2)
+library(dplyr)
+
+data <- read.csv("./data/listings.csv")
+
+data_sample_100 <- data[sample(nrow(data), 75), ]
+
+bedrooms_data <- data_sample_100 %>%
+    group_by(room_type) %>%
+    summarize(mean_bedrooms = mean(bedrooms, na.rm = TRUE))
+
+data$price_num <- as.numeric(gsub("\\$", "", data$price))
+
+price <- data$price_num
+average_price <- mean(price, na.rm = TRUE)
+max_price <- max(price, na.rm = TRUE)
+
+data$host_response_rate_num <- as.numeric(gsub(
+    "%", "",
+    data$host_response_rate
+))
+
+avg_response_time_by_room_type <- aggregate(
+    data$host_response_rate_num,
+    by = list(data$room_type),
+    FUN = mean,
+    na.rm = TRUE
+)
+```
+
+### Aufgabe 1
+Hier wird in einem Histogramm der durchschnittliche und maximale Preis der Airbnb-Unterkünfte dargestellt.
+
+```{r, include=TRUE}
+hist(price,
+    main = "Price Distribution",
+    xlab = "Price in USD",
+    ylab = "Frequency",
+    col = "#7272e2"
+)
+```
+
+Hier wird die Antwortzeit der Airbnb-Unterkünfte dargestellt.
+TODO: Add a second boxplot for the presentation with the y-range of 80-100 to make it more readable.
+
+```{r, include=TRUE}
+    
+```{r, include=TRUE}
+boxplot(data$host_response_rate_num ~ data$room_type,
+    main = "Host Response Rate Distribution",
+    xlab = "Room Type",
+    ylab = "Response time in minutes",
+    col = "#7272e2"
+)
+```
+
+### Aufgabe 2
+
+Hier wird die durchschnittliche Bettenanzahl der Airbnb-Unterkünfte nach Unterkunftstyp dargestellt.
+```{r, include=TRUE}
+ggplot(bedrooms_data, aes(x = room_type, y = mean_bedrooms)) +
+    geom_bar(stat = "identity", fill = "cornflowerblue") +
+    labs(
+        title = "Average number of bedrooms by room type",
+        x = "Room Type",
+        y = "Average number of bedrooms"
+    )
+```
+
+Hier werden die verschiedenen Unterkunftstypen nach Ortschaft dargestellt.
+```{r, include=TRUE}
+ggplot(data_sample_100, aes(x = host_location, fill = room_type)) +
+    geom_bar(position = "stack") +
+    labs(
+        title = "Host Location vs. Room Type",
+        x = "Host Location",
+        y = "Room Type"
+    )
+```
