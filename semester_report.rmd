@@ -1,0 +1,163 @@
+---
+title: Semesterbericht ExpD
+author: Fabio Kapsahili
+date: 2022-12-05
+output:
+    html_document
+---
+
+## Inhalt
+
+1. [Zielsetzung](#ziele)
+2. [Aufgaben](#aufgaben)
+3. [Resultate](#resultate)
+4. [Erkenntnisse](#erkenntnisse)
+
+## Zielsetzung
+
+Ziel der Semesterarbeit im Modul "Explorative Datenanalyse" ist es, in Gruppen respektive alleine an verschiedenen Aufgaben mit einem selbst
+gewählten Datensatz zu arbeiten. Dabei sollen die erlernten Methoden angewendet und die Ergebnisse in einem Bericht dokumentiert werden.
+Die Semesterarbeit macht es möglich, den in der Vorlesung erlernten Stoff anzuwenden und zu vertiefen.
+
+## Aufgaben
+
+1. [Aufgabe 1](#aufgabe1)
+2. [Aufgabe 2](#aufgabe2)
+3. [Aufgabe 4](#aufgabe4)
+
+### Aufgabe 1
+
+Die erste Aufgabe besteht darin, einen Datensatz zu finden und zu beschreiben. Dabei ist es wichtig, dass der Datensatz ausreichend viele Daten
+enthält, um die verschiedenen Methoden anwenden zu können. Der Datensatz soll mindestens 6 Variablen (Spalten) und je 30 Beobachtungen (Zeilen) aufweisen.
+Zudem sollen mindestens 3 kategorielle und 3 numerische Variablen vorhanden sein und es soll sich nicht um zu stark aggegrierte Daten handeln, was bedeutet,
+dass die einzelnen Beobachtungen nicht zu stark zusammengefasst sind. Von Vorteil ist es zudem, wenn ausreichend viele fehlende Werte aufweisen, damit die verschiedenen
+Methoden zur Behandlung von fehlenden Werten angewendet werden können.
+
+Für die Datenauswahl habe ich mich für einen Web Scraping Datensatz von Airbnb entschieden. Dieser Datensatz enthält Informationen über die öffentlichen Inserate von Airbnb.
+
+Hier wird dargestellt, wie viele Spalten und Beobachtungen in dem Datensatz vorhanden sind:
+```{r include=FALSE}
+data <- read.csv("./data/listings.csv")
+data$price_num <- as.numeric(gsub("\\$", "", data$price))
+```
+
+```{r include=TRUE}
+# Anzahl Spalten
+ncol(data)
+
+# Anzahl Beobachtungen
+nrow(data)
+```
+<br />
+
+Zudem sollen zwei Variablen des ausgewählten Datensatzes ausgesucht und eine Grafik darstellen. Wichtig dabei ist, dass mit der Grafik eine sinnvolle Kennzahl
+ermittelt werden kann.
+<br />
+Hierbei hatte ich mich zuerst für den mittleren Preis pro Inserat entschieden. Dieser wird in der neuen Spalte "price_num" gespeichert. Jedoch ist mir aufgefallen,
+dass der Mittelwert nicht aussagekräftig ist, da es sehr viele Inserate gibt, die sehr teuer sind. Deshalb habe ich mich für den Median entschieden. Der Mittelwert
+soll nämlich nur für Normalverteilungen verwendet werden, die eine geringe Anzahl an Ausreissern enthalten. Der Median ist jedoch robust gegenüber Ausreissern und
+wird verwendet, um die zentrale Tendenz für schiefe zu bestimmen. 
+
+```{r include=TRUE, echo=FALSE, warning=FALSE, out.width="50%", fig.cap="Durchschnittlicher Preis pro Inserat"}
+price <- data$price_num
+average_price <- mean(price, na.rm = TRUE)
+max_price <- max(price, na.rm = TRUE)
+median_price <- median(price, na.rm = TRUE)
+
+cat("Durchschnittlicher Preis in USD: ", average_price)
+cat("Mittlerer Preis in USD: ", median_price)
+cat("Maximaler Preis in USD: ", max_price)
+
+hist(price,
+    main = "Price Distribution",
+    xlab = "Price in USD",
+    ylab = "Frequency",
+    col = "#7272e2"
+)
+```
+<br />
+<br />
+
+### Aufgabe 2
+
+```{r include=FALSE}
+library(ggplot2)
+library(dplyr)
+```
+
+Die zweite Aufgabe besteht darin, 2 datentypenadäquate bivariate Visualisierungen zu erstellen. Dabei ist es wichtig, dass die Visualisierungen
+eine Aussagekraft haben und die Daten nicht zu stark zusammengefasst sind. Zudem ist es wichtig, dass die Visualisierungen einen Vergleich zwischen
+den einzelnen Variablen ermöglichen.
+<br />
+
+```{r echo=FALSE, out.widthg="50%", fig.cap="Bivariate Visualisierung"}
+data_sample_100 <- data[sample(nrow(data), 100), ]
+
+bedrooms_data <- data_sample_100 %>%
+    group_by(room_type) %>%
+    summarize(mean_bedrooms = mean(bedrooms, na.rm = TRUE))
+
+ggplot(bedrooms_data, aes(x = room_type, y = mean_bedrooms)) +
+    geom_bar(stat = "identity", fill = "cornflowerblue") +
+    labs(
+        title = "Average number of bedrooms by room type",
+        x = "Room Type",
+        y = "Average number of bedrooms"
+    )
+```
+Bei der ersten Visualisierung geht es darum, die durchschnittliche Anzahl an Schlafzimmern pro Raumtyp zu visualisieren. Hier wird deutlich, dass
+die meisten Inserate mit einem oder zwei Schlafzimmern angeboten werden. Zudem ist es interessant zu sehen, dass die meisten Inserate mit einem
+ganzen Haus oder einer ganzen Wohnung angeboten werden.
+
+Da es nicht viele verschiedene Werte für die Raumtypen gibt, habe ich mich für eine Barplot Visualisierung entschieden.
+<br />
+<br />
+<br />
+
+```{r echo=FALSE, out.width="75%", fig.cap="Bivariate Visualisierung mit 2 Variablen"}
+data_sample_100 <- data[sample(nrow(data), 100), ]
+
+ggplot(data_sample_100, aes(x = host_location, fill = room_type)) +
+    geom_bar(position = "stack") +
+    labs(
+        title = "Host Location vs. Room Type",
+        x = "Host Location",
+        y = "Room Type"
+    ) + 
+    theme(
+        axis.text.x = element_text(angle = 90)
+    )
+```
+
+Bei dieser zweiten Visualisierung geht es darum, die Verteilung der Raumtypen pro Host Location zu visualisieren. Hier wird deutlich, dass die meisten
+Inserate in Amsterdam angeboten werden. Zudem ist es interessant zu sehen, dass die meisten Inserate mit einem ganzen Haus oder einer ganzen Wohnung
+angeboten werden.
+<br />
+<br />
+
+## Aufgabe 4
+
+Die vierte Aufgabe besteht darin, die bestehenden Resultate mit einem Abschnitt zu erweitern, in dem Variablen aus dem Datensatz zwei datentypenadäquate multivariate
+Grafiken erzeugen. Multivariate Grafiken zeigen die Beziehung zwischen mehreren Variablen an. Es gibt zwei gängige Methoden, um mehrere Variablen zu berücksichtigen:
+- Gruppierung
+- Facettierung
+
+Hier habe ich mich für die Gruppierung entschieden, bei der die ersten beiden Variablen auf die x- und y-Achse abgebildet und anschliessend weitere Variablen mit
+anderen visuellen Markierungen hinzugefügt werden (z.B. Farbe, Form, Grösse, Linientyp bei Linecharts). Man erkennt hier schnell, dass mit der Gruppierung einfach
+Daten für mehrere Gruppen in einem einzigen Diagramm dargestellt werden.
+
+```{r echo=FALSE, warning=FALSE, out.width="75%", fig.cap="Multivariate Visualisierung mit 3 Variablen"}
+data$price_num <- as.numeric(gsub("\\$", "", data$price))
+data_sample_100 <- data[sample(nrow(data), 100), ]
+
+ggplot(data_sample_100, aes(
+    x = host_location, y = price_num,
+    color = host_is_superhost,
+    shape = host_identity_verified
+)) +
+    geom_point(size = 3, alpha = .6) +
+    labs(title = "Price by host location") +
+    theme(
+        axis.text.x = element_text(angle = 90)
+    )
+```
