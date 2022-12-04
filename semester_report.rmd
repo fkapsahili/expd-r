@@ -9,9 +9,8 @@ output:
 ## Inhalt
 
 1. [Zielsetzung](#ziele)
-2. [Aufgaben](#aufgaben)
-3. [Resultate](#resultate)
-4. [Erkenntnisse](#erkenntnisse)
+2. [Resultate und Erkenntnisse](#resultate-und-erkenntnisse)
+3. [Fazit](#fazit)
 
 ## Zielsetzung
 
@@ -19,7 +18,7 @@ Ziel der Semesterarbeit im Modul "Explorative Datenanalyse" ist es, in Gruppen r
 gewählten Datensatz zu arbeiten. Dabei sollen die erlernten Methoden angewendet und die Ergebnisse in einem Bericht dokumentiert werden.
 Die Semesterarbeit macht es möglich, den in der Vorlesung erlernten Stoff anzuwenden und zu vertiefen.
 
-## Aufgaben
+## Resultate und Erkenntnisse
 
 1. [Aufgabe 1](#aufgabe1)
 2. [Aufgabe 2](#aufgabe2)
@@ -37,6 +36,9 @@ Für die Datenauswahl habe ich mich für einen Web Scraping Datensatz von Airbnb
 
 Hier wird dargestellt, wie viele Spalten und Beobachtungen in dem Datensatz vorhanden sind:
 ```{r include=FALSE}
+library(ggplot2)
+library(dplyr)
+
 data <- read.csv("./data/listings.csv")
 data$price_num <- as.numeric(gsub("\\$", "", data$price))
 ```
@@ -53,7 +55,7 @@ nrow(data)
 Zudem sollen zwei Variablen des ausgewählten Datensatzes ausgesucht und eine Grafik darstellen. Wichtig dabei ist, dass mit der Grafik eine sinnvolle Kennzahl
 ermittelt werden kann.
 <br />
-Hierbei hatte ich mich zuerst für den mittleren Preis pro Inserat entschieden. Dieser wird in der neuen Spalte "price_num" gespeichert. Jedoch ist mir aufgefallen,
+Hierbei hatte ich mich zuerst für den durchschnittlichen Preis pro Inserat entschieden. Dieser wird in der neuen Spalte "price_num" gespeichert. Jedoch ist mir aufgefallen,
 dass der Mittelwert nicht aussagekräftig ist, da es sehr viele Inserate gibt, die sehr teuer sind. Deshalb habe ich mich für den Median entschieden. Der Mittelwert
 soll nämlich nur für Normalverteilungen verwendet werden, die eine geringe Anzahl an Ausreissern enthalten. Der Median ist jedoch robust gegenüber Ausreissern und
 wird verwendet, um die zentrale Tendenz für schiefe zu bestimmen. 
@@ -72,18 +74,55 @@ hist(price,
     main = "Price Distribution",
     xlab = "Price in USD",
     ylab = "Frequency",
-    col = "#7272e2"
+    col = "cornflowerblue",
 )
 ```
 <br />
 <br />
 
-### Aufgabe 2
+Als zweite Kennzahl habe ich mich für die Antwortzeit der Gastgeber pro Inserattyp entschieden. Hierbei habe ich die Spalte "host_response_time" ausgewählt.
+Im ersten der beiden untenstehenden Boxplots ist leicht zu erkennen, dass ein Grossteil der Gastgeber innerhalb von 80-100 Minuten antwortet.
+Da er erste Boxplot nicht einfach zu lesen ist, habe ich den zweiten Boxplot erstellt, der die gleichen Daten enthält. Dieser ist jedoch besser zu lesen, da nur
+die Datenpunkte enthalten sind, die sich in der Range von 80-100 Minuten befinden. 
+```{r include=TRUE, echo=FALSE, warning=FALSE, out.width="70%", fig.cap="Antwortzeit der Gastgeber pro Inserattyp"}
+data$host_response_rate_num <- as.numeric(gsub(
+    "%", "",
+    data$host_response_rate
+))
 
-```{r include=FALSE}
-library(ggplot2)
-library(dplyr)
+boxplot(data$host_response_rate_num ~ data$room_type,
+    main = "Host Response Rate Distribution",
+    xlab = "Room Type",
+    ylab = "Response time in minutes",
+    col = "cornflowerblue",
+)
+
+avg_response_time_by_room_type <- aggregate(
+    data$host_response_rate_num,
+    by = list(data$room_type),
+    FUN = mean,
+    na.rm = TRUE
+)
+
+print("Durchschnittliche Antwortzeit nach Inserattyp:")
+avg_response_time_by_room_type
+
+
+boxplot(data$host_response_rate_num ~ data$room_type,
+    main = "Host Response Rate Distribution",
+    xlab = "Room Type",
+    ylab = "Response time in minutes",
+    col = "cornflowerblue",
+    ylim = c(80, 100)
+)
 ```
+Im Boxplot ist zu erkennen, dass die Antwortzeit bei Hotelzimmer am längsten ist. Dies ist auch logisch, da die Gastgeber bei Hotelzimmern nicht so oft
+vor Ort sind, wie bei anderen Inserattypen. Die schwarze Linie im Boxplot zeigt den Median an. Dieser ist bei ganzen Häusern/Wohnungen und privaten Zimmern
+am kürzesten.
+<br />
+<br />
+
+### Aufgabe 2
 
 Die zweite Aufgabe besteht darin, 2 datentypenadäquate bivariate Visualisierungen zu erstellen. Dabei ist es wichtig, dass die Visualisierungen
 eine Aussagekraft haben und die Daten nicht zu stark zusammengefasst sind. Zudem ist es wichtig, dass die Visualisierungen einen Vergleich zwischen
@@ -98,7 +137,7 @@ bedrooms_data <- data_sample_100 %>%
     summarize(mean_bedrooms = mean(bedrooms, na.rm = TRUE))
 
 ggplot(bedrooms_data, aes(x = room_type, y = mean_bedrooms)) +
-    geom_bar(stat = "identity", fill = "cornflowerblue") +
+    geom_bar(stat = "identity", color = "white",fill = "cornflowerblue") +
     labs(
         title = "Average number of bedrooms by room type",
         x = "Room Type",
@@ -118,7 +157,7 @@ Da es nicht viele verschiedene Werte für die Raumtypen gibt, habe ich mich für
 data_sample_100 <- data[sample(nrow(data), 100), ]
 
 ggplot(data_sample_100, aes(x = host_location, fill = room_type)) +
-    geom_bar(position = "stack") +
+    geom_bar(color = "white", fill = "cornflowerblue", position = "stack") +
     labs(
         title = "Host Location vs. Room Type",
         x = "Host Location",
@@ -146,11 +185,11 @@ Hier habe ich mich für die Gruppierung entschieden, bei der die ersten beiden V
 anderen visuellen Markierungen hinzugefügt werden (z.B. Farbe, Form, Grösse, Linientyp bei Linecharts). Man erkennt hier schnell, dass mit der Gruppierung einfach
 Daten für mehrere Gruppen in einem einzigen Diagramm dargestellt werden.
 
-```{r echo=FALSE, warning=FALSE, out.width="75%", fig.cap="Multivariate Visualisierung mit 3 Variablen"}
+```{r echo=FALSE, warning=FALSE, out.width="100%", fig.cap="Multivariate Visualisierung mit 3 Variablen"}
 data$price_num <- as.numeric(gsub("\\$", "", data$price))
-data_sample_100 <- data[sample(nrow(data), 100), ]
+data_sample_500 <- data[sample(nrow(data), 500), ]
 
-ggplot(data_sample_100, aes(
+ggplot(data_sample_500, aes(
     x = host_location, y = price_num,
     color = host_is_superhost,
     shape = host_identity_verified
@@ -159,5 +198,39 @@ ggplot(data_sample_100, aes(
     labs(title = "Price by host location") +
     theme(
         axis.text.x = element_text(angle = 90)
-    )
+    ) +
+    ylab("Price in USD") +
+    xlab("Location")
 ```
+
+In der Visualisierung wird deutlich, dass die meisten Inserate in Amsterdam angeboten werden. Zudem ist es interessant zu sehen, dass die meisten Inserate von
+Gastgebern angeboten werden, die keine sogenannten "Superhosts" sind und deren Identität bei Airbnb verifiziert ist. Die teuersten Inserate mit einem Preis bis zu
+1000 USD pro Nacht werden von Superhosts, die verifiziert sind, in Amsterdam angeboten. Jedoch kann aus der Grafik gelesen werden, dass es in Amsterdam und Abcoude
+sehr viele Inserate gibt, die sich in einem sehr breiten Preissegment befinden.
+<br />
+<br />
+
+```{r echo=FALSE, warning=FALSE, out.width="90%", fig.cap="Multivariate Visualisierung mit 3 Variablen"}
+data$price_num <- as.numeric(gsub("\\$", "", data$price))
+ggplot(data, aes(
+    x = beds, y = price_num,
+    color = room_type,
+    )) + geom_point(size = 3, alpha = .6) +
+    labs(title = "Price by beds") +
+    ylab("Price in USD") + 
+    xlab("Number of beds")
+```
+
+In der oberen Grafik wird deutlich, dass die meisten Inserate mit einem Preis bis zu 1000 USD pro Nacht angeboten werden. Zudem ist es interessant zu sehen, dass
+die meisten Inserate mit einem Preis bis zu 1000 USD pro Nacht mit einem Bett angeboten werden. Jedoch kann aus der Grafik gelesen werden, dass es nur sehr wenige
+Ausreisser gibt, die 15 oder mehr Betten anbieten. Die meisten Inserate haben 1 bis 5 Betten und befinden sich preislich im Bereich von 50 bis 500 USD pro Nacht.
+<br />
+<br />
+
+## Fazit
+
+In diesem Projekt habe ich die Daten von Airbnb Amsterdam analysiert. Dabei habe ich die Daten aufbereitet, die Daten untersucht und die Daten visualisiert. Dabei
+konnte ich einige interessante Erkenntnisse gewinnen. So ist es beispielsweise interessant zu sehen, dass die meisten Inserate mit einem oder zwei Schlafzimmern
+angeboten werden. Zudem ist es interessant zu sehen, dass die meisten Inserate von Gastgebern angeboten werden, die keine sogenannten "Superhosts" sind und deren
+Identität bei Airbnb verifiziert ist. Die teuersten Inserate mit einem Preis bis zu 1000 USD pro Nacht werden von Superhosts, die verifiziert sind, in Amsterdam
+angeboten. Jedoch kann aus der Grafik gelesen werden, dass es in Amsterdam und Abcoude sehr viele Inserate gibt, die sich in einem sehr breiten Preissegment befinden.
