@@ -118,7 +118,7 @@ boxplot(data$host_response_rate_num ~ data$room_type,
 ```
 Im Boxplot ist zu erkennen, dass die Antwortzeit bei Hotelzimmer am längsten ist. Dies ist auch logisch, da die Gastgeber bei Hotelzimmern nicht so oft
 vor Ort sind, wie bei anderen Inserattypen. Die schwarze Linie im Boxplot zeigt den Median an. Dieser ist bei ganzen Häusern/Wohnungen und privaten Zimmern
-am kürzesten.
+am längsten und bei Hotelzimmern am kürzesten, jedoch streut sich die Verteilung bei diesem Room Type auch am meisten zusammen mit den Shared Rooms.
 <br />
 <br />
 
@@ -130,18 +130,16 @@ den einzelnen Variablen ermöglichen.
 <br />
 
 ```{r echo=FALSE, out.widthg="50%", fig.cap="Bivariate Visualisierung"}
-data_sample_100 <- data[sample(nrow(data), 100), ]
-
-bedrooms_data <- data_sample_100 %>%
+bedrooms_data <- data %>%
     group_by(room_type) %>%
     summarize(mean_bedrooms = mean(bedrooms, na.rm = TRUE))
 
 ggplot(bedrooms_data, aes(x = room_type, y = mean_bedrooms)) +
     geom_bar(stat = "identity", color = "white",fill = "cornflowerblue") +
     labs(
-        title = "Average number of bedrooms by room type",
+        title = "Number of bedrooms by room type",
         x = "Room Type",
-        y = "Average number of bedrooms"
+        y = "Number of bedrooms"
     )
 ```
 Bei der ersten Visualisierung geht es darum, die durchschnittliche Anzahl an Schlafzimmern pro Raumtyp zu visualisieren. Hier wird deutlich, dass
@@ -188,6 +186,8 @@ Daten für mehrere Gruppen in einem einzigen Diagramm dargestellt werden.
 ```{r echo=FALSE, warning=FALSE, out.width="100%", fig.cap="Multivariate Visualisierung mit 3 Variablen"}
 data$price_num <- as.numeric(gsub("\\$", "", data$price))
 data_sample_500 <- data[sample(nrow(data), 500), ]
+
+data_sample_500 <- data_sample_500[data_sample_500$host_location != "", ]
 
 ggplot(data_sample_500, aes(
     x = host_location, y = price_num,
